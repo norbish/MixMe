@@ -8,25 +8,32 @@ using UnityEngine.UI;
 
 public class DrinkChooseScript : MonoBehaviour {
 	//WI-FI
-	bool socketReady = false;
+	bool socketReady1 = false;
+	bool socketReady2 = false;
 	TcpClient Socket;
+	TcpClient Socket2;
 	public NetworkStream dataStream;//typ serial
+	public NetworkStream inStream;
 	StreamWriter ToArduino;
 	StreamReader FromArduino;
 	public string Host = "192.168.10.107";
-	public int Port = 5001;//kan settes til hvilken som helst port SE OVER
+	public int outPort = 5001;//kan settes til hvilken som helst port SE OVER
+	public int inPort = 5002;
 	public Text StatusField;
+	string statusText = "Ready for order";
+	char[] displayText = new char[2];
 
 	//BLUETOOTH
-	private SerialPort ArduinoDue = new SerialPort();
+	/*private SerialPort ArduinoDue = new SerialPort();
 	private SerialPort ArduinoDueIN = new SerialPort();
 	private string DrinkString;
 	public string comPort = "COM3";
-	public string comPortIn = "COM5";
+	public string comPortIn = "COM5";*/
 	void Start () 
 	{
 		//WI-FI
-		StartCoroutine ("setupSocket");
+		StartCoroutine ("setupSocketOut");
+		StartCoroutine ("setupSocketIn");
 		//setupSocket ();
 
 
@@ -49,47 +56,85 @@ public class DrinkChooseScript : MonoBehaviour {
 	// Update is ca	lled once per frame
 	void Update () 
 	{
-		/*while (dataStream.DataAvailable) 
-		{
-			string status = readSocket();
-			StatusField.text = status;
-		}*/
+		
+			//tartCoroutine("readSocket");
+		//readSocket ();
+			//StatusField.text = statusText;
+		
 
 	}
-	public void setupSocket()
+	public void setupSocketOut()
 	{
 		try{
-			Socket = new TcpClient(Host,Port);
+			Socket = new TcpClient(Host,outPort);
 			dataStream = Socket.GetStream ();
 			ToArduino = new StreamWriter(dataStream);
-			FromArduino = new StreamReader(dataStream);
-			socketReady = true;
-			Debug.Log ("Socket created");
+			//FromArduino = new StreamReader(dataStream);
+			socketReady1 = true;
+			Debug.Log ("out Socket created");
 			}catch(SocketException e)
 		{
-			Debug.Log ("Socket exception: " + e);
+			Debug.Log ("out Socket exception: " + e);
 		}
 	}
+	public void setupSocketIn()
+	{
+		try{
+			Socket2 = new TcpClient(Host,inPort);
+			inStream = Socket2.GetStream ();
+			//ToArduino = new StreamWriter(inStream);
+			FromArduino = new StreamReader(inStream);
+			socketReady2 = true;
+			//inStream.ReadTimeout = 1;
+			Debug.Log ("in Socket created");
+		}catch(SocketException e)
+		{
+			Debug.Log ("in Socket exception: " + e);
+		}
+	}
+
 	public void sendOrder(string order)
 	{
-		if (!socketReady)
+		if (!socketReady1)
 			return;
 		ToArduino.Write (order);
 		Thread.Sleep (50);
 		ToArduino.Flush ();
+		StatusField.text = "Mixer Status:\nOrder Placed";
 
 	}
 	public string readSocket()
 	{
-		if (!socketReady)
-			return "";
-		if (dataStream.DataAvailable)
+		//setupSocketIn ();
+		//Thread.Sleep (3000);
+
+			/*if (!socketReady2) {
+				return "";
+			}*/
+
+			try 
+		{
+
+			 //statusText = FromArduino.ReadLine ();
+
+			//return FromArduino.ReadLine ();
+			statusText = FromArduino.ReadLine();
+			Debug.Log ("mottatt" + statusText);
 			return FromArduino.ReadLine ();
-		return "NULL";
+		}catch(SocketException e)
+		{
+			return "cant read" + e;
+		}
+
 	}
 	public void onClickWIFI(string order)
 	{
 		sendOrder (order);
+		//readSocket ();
+	}
+	public void onReceiveClick()
+	{
+		StatusField.text = readSocket ();
 	}
 
 

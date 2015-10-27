@@ -31,7 +31,7 @@ public class ToggleSettings : MonoBehaviour {
 			//texture
 			ToggleImage.sprite = Resources.Load<Sprite>("ArrowDown");
 			//ToggleImage.GetComponent<SpriteRenderer>().sprite = ArrowDown;
-			for(int i = 0; i < 50; i++)
+			for(int i = 0; i < 100; i++)
 			{
 				settings.transform.position = new Vector2(settings.transform.position.x, settings.transform.position.y + 10);
 				yield return new WaitForSeconds(.001f);
@@ -41,7 +41,7 @@ public class ToggleSettings : MonoBehaviour {
 		{
 			//texture
 			ToggleImage.sprite = Resources.Load <Sprite>("ArrowUp") ;
-			for(int i = 0; i < 50; i++)
+			for(int i = 0; i < 100; i++)
 			{
 				settings.transform.position = new Vector2(settings.transform.position.x, settings.transform.position.y - 10);
 				yield return new WaitForSeconds(.001f);

@@ -5,24 +5,23 @@ using System.Threading;
 using System.IO;
 using System.Net.Sockets;
 using UnityEngine.UI;
+using System.Text;
 
 public class DrinkChooseScript : MonoBehaviour {
 	//WI-FI
 	bool socketReady1 = false;
-	bool socketReady2 = false;
 	TcpClient Socket;
-	TcpClient Socket2;
 	public NetworkStream dataStream;//typ serial
 	public NetworkStream inStream;
 	StreamWriter ToArduino;
-	StreamReader FromArduino;
-	public string Host = "192.168.10.107";
+	public string Host = "192.168.10.229";
 	public int outPort = 5001;//kan settes til hvilken som helst port SE OVER
 	public int inPort = 5002;
 	public Text StatusField;
-	string statusText = "Ready for order";
 	char[] displayText = new char[2];
-
+	public Text netHost;
+	public Text statusTextHost;
+	public bool pBool = true;
 	//BLUETOOTH
 	/*private SerialPort ArduinoDue = new SerialPort();
 	private SerialPort ArduinoDueIN = new SerialPort();
@@ -33,7 +32,8 @@ public class DrinkChooseScript : MonoBehaviour {
 	{
 		//WI-FI
 		StartCoroutine ("setupSocketOut");
-		StartCoroutine ("setupSocketIn");
+		//StartCoroutine ("setupSocketIn");
+		//StartCoroutine ("readSocket");
 		//setupSocket ();
 
 
@@ -56,12 +56,40 @@ public class DrinkChooseScript : MonoBehaviour {
 	// Update is ca	lled once per frame
 	void Update () 
 	{
-		
-			//tartCoroutine("readSocket");
+
+			//StartCoroutine("readSocket");
 		//readSocket ();
 			//StatusField.text = statusText;
 		
 
+	}
+	public void hostTest()
+	{
+        
+		if (netHost.text == "") {
+			statusTextHost.text = "insert IP of mixer!";
+		} else 
+		{
+			Host = netHost.text;
+            try
+            {
+                Socket = new TcpClient(Host, outPort);
+                dataStream = Socket.GetStream();
+                ToArduino = new StreamWriter(dataStream);
+                //FromArduino = new StreamReader(dataStream);
+                socketReady1 = true;
+                Debug.Log("out Socket created from StatusCheck");
+                statusTextHost.text = "Connected to: " + netHost.text;
+            }
+            catch (SocketException e)
+            {
+                //socketReady1 = false;
+
+                statusTextHost.text = "Error connecting to: " + netHost.text + " Check if device is connected to same network as mixer.";
+                Debug.Log("out Socket exception: " + e);
+            }
+            
+		}
 	}
 	public void setupSocketOut()
 	{
@@ -72,26 +100,14 @@ public class DrinkChooseScript : MonoBehaviour {
 			//FromArduino = new StreamReader(dataStream);
 			socketReady1 = true;
 			Debug.Log ("out Socket created");
+			StatusField.text = "Ready for order";
 			}catch(SocketException e)
 		{
 			Debug.Log ("out Socket exception: " + e);
 		}
 	}
-	public void setupSocketIn()
-	{
-		try{
-			Socket2 = new TcpClient(Host,inPort);
-			inStream = Socket2.GetStream ();
-			//ToArduino = new StreamWriter(inStream);
-			FromArduino = new StreamReader(inStream);
-			socketReady2 = true;
-			//inStream.ReadTimeout = 1;
-			Debug.Log ("in Socket created");
-		}catch(SocketException e)
-		{
-			Debug.Log ("in Socket exception: " + e);
-		}
-	}
+	
+	
 
 	public void sendOrder(string order)
 	{
@@ -103,40 +119,42 @@ public class DrinkChooseScript : MonoBehaviour {
 		StatusField.text = "Mixer Status:\nOrder Placed";
 
 	}
-	public string readSocket()
+
+    
+	/*public void readSocket()
 	{
 		//setupSocketIn ();
 		//Thread.Sleep (3000);
 
-			/*if (!socketReady2) {
-				return "";
-			}*/
-
+			//if (!socketReady2) {
+			//	return "";
+			//}
+		//while(true)
+		//if(inStream.DataAvailable)
 			try 
 		{
 
 			 //statusText = FromArduino.ReadLine ();
+			Debug.Log ("try receiving");
+            //return FromArduino.ReadLine ();
 
-			//return FromArduino.ReadLine ();
-			statusText = FromArduino.ReadLine();
-			Debug.Log ("mottatt" + statusText);
-			return FromArduino.ReadLine ();
+            //StatusField.text = FromArduino.ReadLine();
+			Debug.Log ("mottatt" + FromArduino.ReadLine());
+
+			 //FromArduino.ReadLine ();
 		}catch(SocketException e)
 		{
-			return "cant read" + e;
+			Debug.Log ( "cant read" + e);
+
 		}
 
-	}
+	}*/
 	public void onClickWIFI(string order)
 	{
 		sendOrder (order);
 		//readSocket ();
 	}
-	public void onReceiveClick()
-	{
-		StatusField.text = readSocket ();
-	}
-
+	
 
 	//BLUETOOTH
 	/*public void readSerialThread()
